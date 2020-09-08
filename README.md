@@ -12,7 +12,7 @@ Download Windows/Linux/MacOS Executable for Intel/AMD/Nvidia GPU
 
 **https://github.com/nihui/cain-ncnn-vulkan/actions**
 
-This package includes all the binaries and models required. It is portable, so no CUDA or Caffe runtime environment is needed :)
+This package includes all the binaries and models required. It is portable, so no CUDA or PyTorch runtime environment is needed :)
 
 ## About CAIN
 
