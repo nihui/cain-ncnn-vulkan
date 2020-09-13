@@ -11,8 +11,8 @@
 
 CAIN::CAIN(int gpuid)
 {
-    tilesize = 256;
-    prepadding = 32;
+    tilesize = 512;
+    prepadding = 64;
 
     vkdev = ncnn::get_gpu_device(gpuid);
     cain_preproc = 0;
@@ -89,6 +89,30 @@ int CAIN::load()
     return 0;
 }
 
+static void image_mean(const ncnn::Mat& image, float mean_rgb[3])
+{
+    const unsigned char* pixeldata = (const unsigned char*)image.data;
+    const int w = image.w;
+    const int h = image.h;
+    const int size = w * h;
+
+    float mean_r = 0.f;
+    float mean_g = 0.f;
+    float mean_b = 0.f;
+    for (int i = 0; i < size; i++)
+    {
+        mean_r += pixeldata[0];
+        mean_g += pixeldata[1];
+        mean_b += pixeldata[2];
+
+        pixeldata += 3;
+    }
+
+    mean_rgb[0] = mean_r / size / 255.f;
+    mean_rgb[1] = mean_g / size / 255.f;
+    mean_rgb[2] = mean_b / size / 255.f;
+}
+
 int CAIN::process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float timestep, ncnn::Mat& outimage) const
 {
     if (timestep == 0.f)
@@ -111,6 +135,11 @@ int CAIN::process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float ti
 
     const int TILE_SIZE_X = tilesize;
     const int TILE_SIZE_Y = tilesize;
+
+    float mean_rgb0[3];
+    float mean_rgb1[3];
+    image_mean(in0image, mean_rgb0);
+    image_mean(in1image, mean_rgb1);
 
 //     fprintf(stderr, "%d x %d\n", w, h);
 
@@ -152,11 +181,11 @@ int CAIN::process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float ti
         else
         {
 #if _WIN32
-            in0 = ncnn::Mat::from_pixels(pixel0data + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_BGR, w, (in_tile_y1 - in_tile_y0));
-            in1 = ncnn::Mat::from_pixels(pixel1data + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_BGR, w, (in_tile_y1 - in_tile_y0));
+            in0 = ncnn::Mat::from_pixels(pixel0data + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_BGR2RGB, w, (in_tile_y1 - in_tile_y0));
+            in1 = ncnn::Mat::from_pixels(pixel1data + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_BGR2RGB, w, (in_tile_y1 - in_tile_y0));
 #else
-            in0 = ncnn::Mat::from_pixels(pixel0data + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_RGB2BGR, w, (in_tile_y1 - in_tile_y0));
-            in1 = ncnn::Mat::from_pixels(pixel1data + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_RGB2BGR, w, (in_tile_y1 - in_tile_y0));
+            in0 = ncnn::Mat::from_pixels(pixel0data + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_RGB, w, (in_tile_y1 - in_tile_y0));
+            in1 = ncnn::Mat::from_pixels(pixel1data + in_tile_y0 * w * channels, ncnn::Mat::PIXEL_RGB, w, (in_tile_y1 - in_tile_y0));
 #endif
         }
 
@@ -207,16 +236,25 @@ int CAIN::process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float ti
                 bindings[0] = in0_gpu;
                 bindings[1] = in0_tile_gpu;
 
-                std::vector<ncnn::vk_constant_type> constants(9);
+                std::vector<ncnn::vk_constant_type> constants(12);
                 constants[0].i = in0_gpu.w;
                 constants[1].i = in0_gpu.h;
                 constants[2].i = in0_gpu.cstep;
                 constants[3].i = in0_tile_gpu.w;
                 constants[4].i = in0_tile_gpu.h;
                 constants[5].i = in0_tile_gpu.cstep;
-                constants[6].i = prepadding;
-                constants[7].i = std::max(prepadding - yi * TILE_SIZE_Y, 0);
-                constants[8].i = xi * TILE_SIZE_X;
+#if _WIN32
+                constants[6].f = mean_rgb0[2];
+                constants[7].f = mean_rgb0[1];
+                constants[8].f = mean_rgb0[0];
+#else
+                constants[6].f = mean_rgb0[0];
+                constants[7].f = mean_rgb0[1];
+                constants[8].f = mean_rgb0[2];
+#endif
+                constants[9].i = prepadding;
+                constants[10].i = std::max(prepadding - yi * TILE_SIZE_Y, 0);
+                constants[11].i = xi * TILE_SIZE_X;
 
                 cmd.record_pipeline(cain_preproc, bindings, constants, in0_tile_gpu);
             }
@@ -233,16 +271,25 @@ int CAIN::process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float ti
                 bindings[0] = in1_gpu;
                 bindings[1] = in1_tile_gpu;
 
-                std::vector<ncnn::vk_constant_type> constants(9);
+                std::vector<ncnn::vk_constant_type> constants(12);
                 constants[0].i = in1_gpu.w;
                 constants[1].i = in1_gpu.h;
                 constants[2].i = in1_gpu.cstep;
                 constants[3].i = in1_tile_gpu.w;
                 constants[4].i = in1_tile_gpu.h;
                 constants[5].i = in1_tile_gpu.cstep;
-                constants[6].i = prepadding;
-                constants[7].i = std::max(prepadding - yi * TILE_SIZE_Y, 0);
-                constants[8].i = xi * TILE_SIZE_X;
+#if _WIN32
+                constants[6].f = mean_rgb1[2];
+                constants[7].f = mean_rgb1[1];
+                constants[8].f = mean_rgb1[0];
+#else
+                constants[6].f = mean_rgb1[0];
+                constants[7].f = mean_rgb1[1];
+                constants[8].f = mean_rgb1[2];
+#endif
+                constants[9].i = prepadding;
+                constants[10].i = std::max(prepadding - yi * TILE_SIZE_Y, 0);
+                constants[11].i = xi * TILE_SIZE_X;
 
                 cmd.record_pipeline(cain_preproc, bindings, constants, in1_tile_gpu);
             }
@@ -268,16 +315,25 @@ int CAIN::process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float ti
                 bindings[0] = out_gpu_padded;
                 bindings[1] = out_gpu;
 
-                std::vector<ncnn::vk_constant_type> constants(9);
+                std::vector<ncnn::vk_constant_type> constants(12);
                 constants[0].i = out_gpu_padded.w;
                 constants[1].i = out_gpu_padded.h;
                 constants[2].i = out_gpu_padded.cstep;
                 constants[3].i = out_gpu.w;
                 constants[4].i = out_gpu.h;
                 constants[5].i = out_gpu.cstep;
-                constants[6].i = prepadding;
-                constants[7].i = prepadding;
-                constants[8].i = xi * TILE_SIZE_X;
+#if _WIN32
+                constants[6].f = (mean_rgb0[2] + mean_rgb1[2]) / 2.f;
+                constants[7].f = (mean_rgb0[1] + mean_rgb1[1]) / 2.f;
+                constants[8].f = (mean_rgb0[0] + mean_rgb1[0]) / 2.f;
+#else
+                constants[6].f = (mean_rgb0[0] + mean_rgb1[0]) / 2.f;
+                constants[7].f = (mean_rgb0[1] + mean_rgb1[1]) / 2.f;
+                constants[8].f = (mean_rgb0[2] + mean_rgb1[2]) / 2.f;
+#endif
+                constants[9].i = prepadding;
+                constants[10].i = prepadding;
+                constants[11].i = xi * TILE_SIZE_X;
 
                 ncnn::VkMat dispatcher;
                 dispatcher.w = std::min((xi + 1) * TILE_SIZE_X, w) - xi * TILE_SIZE_X;
@@ -312,9 +368,9 @@ int CAIN::process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float ti
             if (!(opt.use_fp16_storage && opt.use_int8_storage))
             {
 #if _WIN32
-                out.to_pixels((unsigned char*)outimage.data + out_tile_y0 * w * channels, ncnn::Mat::PIXEL_BGR);
+                out.to_pixels((unsigned char*)outimage.data + out_tile_y0 * w * channels, ncnn::Mat::PIXEL_RGB2BGR);
 #else
-                out.to_pixels((unsigned char*)outimage.data + out_tile_y0 * w * channels, ncnn::Mat::PIXEL_BGR2RGB);
+                out.to_pixels((unsigned char*)outimage.data + out_tile_y0 * w * channels, ncnn::Mat::PIXEL_RGB);
 #endif
             }
         }

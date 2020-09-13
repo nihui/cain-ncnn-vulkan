@@ -29,6 +29,10 @@ layout (push_constant) uniform parameter
     int outh;
     int outcstep;
 
+    float mean_r;
+    float mean_g;
+    float mean_b;
+
     int pad_x;
     int pad_y;
 
@@ -56,7 +60,7 @@ void main()
 
     float v;
 
-    if (bgr == 1)
+    if (bgr == 0)
         v = float(uint(bottom_blob_data[v_offset * 3 + gz]));
     else
         v = float(uint(bottom_blob_data[v_offset * 3 + 2 - gz]));
@@ -67,6 +71,7 @@ void main()
 #endif
 
     const float norm_val = 1 / 255.f;
+    const float mean_val = gz == 0 ? p.mean_r : gz == 1 ? p.mean_g : p.mean_b;
 
-    top_blob_data[gz * p.outcstep + gy * p.outw + gx] = sfp(v * norm_val - 0.5f);
+    top_blob_data[gz * p.outcstep + gy * p.outw + gx] = sfp(v * norm_val - mean_val);
 }

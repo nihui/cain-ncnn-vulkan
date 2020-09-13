@@ -109,7 +109,7 @@ static void print_usage()
     fprintf(stderr, "  -1 input1-path       input image1 path (jpg/png/webp)\n");
     fprintf(stderr, "  -i input-path        input image directory (jpg/png/webp)\n");
     fprintf(stderr, "  -o output-path       output image path (jpg/png/webp) or directory\n");
-    fprintf(stderr, "  -t tile-size         tile size (>=128, default=256) can be 256,256,128 for multi-gpu\n");
+    fprintf(stderr, "  -t tile-size         tile size (>=128, default=512) can be 256,256,128 for multi-gpu\n");
     fprintf(stderr, "  -g gpu-id            gpu device to use (default=auto) can be 0,1,2 for multi-gpu\n");
     fprintf(stderr, "  -j load:proc:save    thread count for load/proc/save (default=1:2:2) can be 1:2,2,2:2 for multi-gpu\n");
     fprintf(stderr, "  -f format            output image format (jpg/png/webp, default=ext/png)\n");
@@ -701,7 +701,7 @@ int main(int argc, char** argv)
 
     if (tilesize.empty())
     {
-        tilesize.resize(use_gpu_count, 256);
+        tilesize.resize(use_gpu_count, 512);
     }
 
     int cpu_count = std::max(1, ncnn::get_cpu_count());
