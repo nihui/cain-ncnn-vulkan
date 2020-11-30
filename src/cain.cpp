@@ -306,6 +306,11 @@ int CAIN::process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float ti
 
                 ex.input("x.1", in0_tile_gpu);
                 ex.input("x.3", in1_tile_gpu);
+
+                // save some memory
+                in0_tile_gpu.release();
+                in1_tile_gpu.release();
+
                 ex.extract("4070", out_gpu_padded, cmd);
             }
 
