@@ -109,7 +109,7 @@ static void print_usage()
     fprintf(stderr, "  -1 input1-path       input image1 path (jpg/png/webp)\n");
     fprintf(stderr, "  -i input-path        input image directory (jpg/png/webp)\n");
     fprintf(stderr, "  -o output-path       output image path (jpg/png/webp) or directory\n");
-    fprintf(stderr, "  -m model-path        dain model path (default=cain)\n");
+    fprintf(stderr, "  -m model-path        cain model path (default=cain)\n");
     fprintf(stderr, "  -g gpu-id            gpu device to use (default=auto) can be 0,1,2 for multi-gpu\n");
     fprintf(stderr, "  -j load:proc:save    thread count for load/proc/save (default=1:2:2) can be 1:2,2,2:2 for multi-gpu\n");
     fprintf(stderr, "  -f pattern-format    output image filename pattern format (%%08d.jpg/png/webp, default=ext/%%08d.png)\n");
