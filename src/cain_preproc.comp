@@ -32,11 +32,6 @@ layout (push_constant) uniform parameter
     float mean_r;
     float mean_g;
     float mean_b;
-
-    int pad_x;
-    int pad_y;
-
-    int crop_x;
 } p;
 
 void main()
@@ -48,15 +43,12 @@ void main()
     if (gx >= p.outw || gy >= p.outh || gz >= 3)
         return;
 
-    int x = gx - p.pad_x + p.crop_x;
-    int y = gy - p.pad_y;
-
     // border replicate
-    x = clamp(x, 0, p.w - 1);
-    y = clamp(y, 0, p.h - 1);
+    gx = clamp(gx, 0, p.w - 1);
+    gy = clamp(gy, 0, p.h - 1);
 
 #if NCNN_int8_storage
-    int v_offset = y * p.w + x;
+    int v_offset = gy * p.w + gx;
 
     float v;
 
@@ -65,7 +57,7 @@ void main()
     else
         v = float(uint(bottom_blob_data[v_offset * 3 + 2 - gz]));
 #else
-    int v_offset = gz * p.cstep + y * p.w + x;
+    int v_offset = gz * p.cstep + gy * p.w + gx;
 
     float v = bottom_blob_data[v_offset];
 #endif

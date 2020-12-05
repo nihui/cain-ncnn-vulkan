@@ -32,11 +32,6 @@ layout (push_constant) uniform parameter
     float mean_r;
     float mean_g;
     float mean_b;
-
-    int pad_x;
-    int pad_y;
-
-    int crop_x;
 } p;
 
 void main()
@@ -48,10 +43,7 @@ void main()
     if (gx >= p.outw || gy >= p.outh || gz >= 3)
         return;
 
-    int x = gx + p.pad_x;
-    int y = gy + p.pad_y;
-
-    float v = float(bottom_blob_data[gz * p.cstep + y * p.w + x]);
+    float v = float(bottom_blob_data[gz * p.cstep + gy * p.w + gx]);
 
     const float mean_val = gz == 0 ? p.mean_r : gz == 1 ? p.mean_g : p.mean_b;
     const float denorm_val = 255.f;
@@ -60,7 +52,7 @@ void main()
     v = (v + mean_val) * denorm_val + clip_eps;
 
 #if NCNN_int8_storage
-    int v_offset = gy * p.outw + gx + p.crop_x;
+    int v_offset = gy * p.outw + gx;
 
     uint v32 = clamp(uint(floor(v)), 0, 255);
 
@@ -69,7 +61,7 @@ void main()
     else
         top_blob_data[v_offset * 3 + 2 - gz] = uint8_t(v32);
 #else
-    int v_offset = gz * p.outcstep + gy * p.outw + gx + p.crop_x;
+    int v_offset = gz * p.outcstep + gy * p.outw + gx;
 
     top_blob_data[v_offset] = v;
 #endif

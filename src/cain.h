@@ -18,11 +18,6 @@ public:
 
     int process(const ncnn::Mat& in0image, const ncnn::Mat& in1image, float timestep, ncnn::Mat& outimage) const;
 
-public:
-    // cain parameters
-    int tilesize;
-    int prepadding;
-
 private:
     ncnn::VulkanDevice* vkdev;
     ncnn::Net cainnet;
