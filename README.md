@@ -80,7 +80,7 @@ Usage: cain-ncnn-vulkan -0 infile -1 infile1 -o outfile [options]...
 - `input0-path`, `input1-path` and `output-path` accept file path
 - `input-path` and `output-path` accept file directory
 - `load:proc:save` = thread count for the three stages (image decoding + cain interpolation + image encoding), using larger values may increase GPU usage and consume more GPU memory. You can tune this configuration with "4:4:4" for many small-size images, and "2:2:2" for large-size images. The default setting usually works fine for most situations. If you find that your GPU is hungry, try increasing thread count to achieve faster processing.
-- `format` = the format of the image to be output, png is better supported, however webp generally yields smaller file sizes, both are losslessly encoded
+- `pattern-format` = the filename pattern and format of the image to be output, png is better supported, however webp generally yields smaller file sizes, both are losslessly encoded
 
 If you encounter a crash or error, try upgrading your GPU driver:
 
