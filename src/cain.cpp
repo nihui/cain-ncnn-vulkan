@@ -25,7 +25,55 @@ CAIN::~CAIN()
     }
 }
 
-int CAIN::load()
+#if _WIN32
+static void load_param_model(ncnn::Net& net, const std::wstring& modeldir, const wchar_t* name)
+{
+    wchar_t parampath[256];
+    wchar_t modelpath[256];
+    swprintf(parampath, 256, L"%s/%s.param", modeldir.c_str(), name);
+    swprintf(modelpath, 256, L"%s/%s.bin", modeldir.c_str(), name);
+
+    {
+        FILE* fp = _wfopen(parampath, L"rb");
+        if (!fp)
+        {
+            fwprintf(stderr, L"_wfopen %ls failed\n", parampath);
+        }
+
+        net.load_param(fp);
+
+        fclose(fp);
+    }
+    {
+        FILE* fp = _wfopen(modelpath, L"rb");
+        if (!fp)
+        {
+            fwprintf(stderr, L"_wfopen %ls failed\n", modelpath);
+        }
+
+        net.load_model(fp);
+
+        fclose(fp);
+    }
+}
+#else
+static void load_param_model(ncnn::Net& net, const std::string& modeldir, const char* name)
+{
+    char parampath[256];
+    char modelpath[256];
+    sprintf(parampath, "%s/%s.param", modeldir.c_str(), name);
+    sprintf(modelpath, "%s/%s.bin", modeldir.c_str(), name);
+
+    net.load_param(parampath);
+    net.load_model(modelpath);
+}
+#endif
+
+#if _WIN32
+int CAIN::load(const std::wstring& modeldir)
+#else
+int CAIN::load(const std::string& modeldir)
+#endif
 {
     ncnn::Option opt;
     opt.use_vulkan_compute = true;
@@ -38,8 +86,11 @@ int CAIN::load()
 
     cainnet.set_vulkan_device(vkdev);
 
-    cainnet.load_param("cain.param");
-    cainnet.load_model("cain.bin");
+#if _WIN32
+    load_param_model(cainnet, modeldir, L"cain");
+#else
+    load_param_model(cainnet, modeldir, "cain");
+#endif
 
     // initialize preprocess and postprocess pipeline
     {

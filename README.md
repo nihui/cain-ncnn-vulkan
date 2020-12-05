@@ -71,9 +71,10 @@ Usage: cain-ncnn-vulkan -0 infile -1 infile1 -o outfile [options]...
   -1 input1-path       input image1 path (jpg/png/webp)
   -i input-path        input image directory (jpg/png/webp)
   -o output-path       output image path (jpg/png/webp) or directory
+  -m model-path        dain model path (default=cain)
   -g gpu-id            gpu device to use (default=auto) can be 0,1,2 for multi-gpu
   -j load:proc:save    thread count for load/proc/save (default=1:2:2) can be 1:2,2,2:2 for multi-gpu
-  -f format            output image format (jpg/png/webp, default=ext/png)
+  -f pattern-format    output image filename pattern format (%08d.jpg/png/webp, default=ext/%08d.png)
 ```
 
 - `input0-path`, `input1-path` and `output-path` accept file path
