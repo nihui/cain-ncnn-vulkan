@@ -1,7 +1,5 @@
 # CAIN ncnn Vulkan
 
-:exclamation: :exclamation: :exclamation: This software is in the early development stage, it may bite your cat
-
 ncnn implementation of CAIN, Channel Attention Is All You Need for Video Frame Interpolation.
 
 cain-ncnn-vulkan uses [ncnn project](https://github.com/Tencent/ncnn) as the universal neural network inference framework.
