@@ -13,8 +13,12 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
+      APPNAME: ${{ steps.get_appname.outputs.APPNAME }}
       VERSION: ${{ steps.get_version.outputs.VERSION }}
     steps:
+    - name: get-appname
+      id: get_appname
+      run: echo ::set-output name=APPNAME::${APPLICATION_NAME}
     - name: get-version
       id: get_version
       run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
@@ -23,7 +27,7 @@ jobs:
     needs: [setup]
     runs-on: ubuntu-latest
     env:
-      PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-models
+      PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-models
     steps:
     - uses: actions/checkout@v2
     - name: package
@@ -41,7 +45,7 @@ jobs:
     needs: [setup]
     runs-on: ubuntu-16.04
     env:
-      PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-ubuntu
+      PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-ubuntu
     steps:
     - uses: actions/checkout@v2
       with:
@@ -134,7 +138,7 @@ jobs:
     needs: [setup, openmp-macos]
     runs-on: macos-latest
     env:
-      PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-macos
+      PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-macos
     steps:
     - uses: actions/checkout@v2
       with:
@@ -198,7 +202,7 @@ jobs:
     needs: [setup]
     runs-on: windows-latest
     env:
-      PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-windows
+      PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-windows
     steps:
     - uses: actions/checkout@v2
       with:
@@ -259,7 +263,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-models
+        PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-models
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
@@ -270,7 +274,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-ubuntu
+        PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-ubuntu
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
@@ -281,7 +285,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-macos
+        PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-macos
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
@@ -292,7 +296,7 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-windows
+        PACKAGENAME: ${{ needs.setup.outputs.APPNAME }}-${{ needs.setup.outputs.VERSION }}-windows
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
