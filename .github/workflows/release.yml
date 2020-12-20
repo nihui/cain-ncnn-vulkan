@@ -45,7 +45,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: true
+        submodules: 'recursive'
     - name: cache-vulkansdk
       id: cache-vulkansdk
       uses: actions/cache@v1
@@ -67,8 +67,8 @@ jobs:
         cmake --build . -j 2
     - name: package
       run: |
-        rm -rf $PACKAGENAME $PACKAGENAME.zip
         mkdir -p $PACKAGENAME
+        cp README.md LICENSE $PACKAGENAME
         cp -r build/$APPLICATION_NAME $PACKAGENAME
         strip -g $PACKAGENAME/$APPLICATION_NAME
         zip -9 -r $PACKAGENAME.zip $PACKAGENAME
@@ -138,7 +138,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: true
+        submodules: 'recursive'
     - name: download-openmp-macos
       uses: actions/download-artifact@v2
       with:
@@ -183,8 +183,8 @@ jobs:
         cmake --build . -j 2
     - name: package
       run: |
-        rm -rf $PACKAGENAME $PACKAGENAME.zip
         mkdir -p $PACKAGENAME
+        cp README.md LICENSE $PACKAGENAME
         lipo -create build-x86_64/$APPLICATION_NAME build-arm64/$APPLICATION_NAME -o $PACKAGENAME/$APPLICATION_NAME
         strip $PACKAGENAME/$APPLICATION_NAME
         zip -9 -r $PACKAGENAME.zip $PACKAGENAME
@@ -202,7 +202,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        submodules: true
+        submodules: 'recursive'
     - name: cache-vulkansdk
       id: cache-vulkansdk
       uses: actions/cache@v1
@@ -224,7 +224,10 @@ jobs:
     - name: package
       run: |
         mkdir $PACKAGENAME
-        Copy-Item -Verbose -Path "build\$APPLICATION_NAME.exe" -Destination "$PACKAGENAME\bin"
+        Copy-Item -Verbose -Path "README.md" -Destination "$PACKAGENAME"
+        Copy-Item -Verbose -Path "LICENSE" -Destination "$PACKAGENAME"
+        Copy-Item -Verbose -Path "build\$APPLICATION_NAME.exe" -Destination "$PACKAGENAME"
+        Copy-Item -Verbose -Path "C:\windows\system32\vcomp140.dll" -Destination "$PACKAGENAME"
         7z a -r $PACKAGENAME.zip $PACKAGENAME
     - name: upload
       uses: actions/upload-artifact@v2
