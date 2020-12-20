@@ -23,25 +23,25 @@ jobs:
     needs: [setup]
     runs-on: ubuntu-latest
     env:
-      PACKAGENAME: $APPLICATION_NAME-${{ needs.setup.outputs.VERSION }}-models
+      PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-models
     steps:
     - uses: actions/checkout@v2
     - name: package
       run: |
         rm -rf .git src
-        rm -f /tmp/$PACKAGENAME.zip
-        zip -9 -r /tmp/$PACKAGENAME.zip .
+        rm -f /tmp/${{ env.PACKAGENAME }}.zip
+        zip -9 -r /tmp/${{ env.PACKAGENAME }}.zip .
     - name: upload
       uses: actions/upload-artifact@v2
       with:
-        name: $PACKAGENAME
-        path: /tmp/$PACKAGENAME.zip
+        name: ${{ env.PACKAGENAME }}
+        path: /tmp/${{ env.PACKAGENAME }}.zip
 
   ubuntu:
     needs: [setup]
     runs-on: ubuntu-16.04
     env:
-      PACKAGENAME: $APPLICATION_NAME-${{ needs.setup.outputs.VERSION }}-ubuntu
+      PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-ubuntu
     steps:
     - uses: actions/checkout@v2
       with:
@@ -67,16 +67,16 @@ jobs:
         cmake --build . -j 2
     - name: package
       run: |
-        mkdir -p $PACKAGENAME
-        cp README.md LICENSE $PACKAGENAME
-        cp -r build/$APPLICATION_NAME $PACKAGENAME
-        strip -g $PACKAGENAME/$APPLICATION_NAME
-        zip -9 -r $PACKAGENAME.zip $PACKAGENAME
+        mkdir -p ${{ env.PACKAGENAME }}
+        cp README.md LICENSE ${{ env.PACKAGENAME }}
+        cp -r build/$APPLICATION_NAME ${{ env.PACKAGENAME }}
+        strip -g ${{ env.PACKAGENAME }}/$APPLICATION_NAME
+        zip -9 -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
     - name: upload
       uses: actions/upload-artifact@v2
       with:
-        name: $PACKAGENAME
-        path: $PACKAGENAME.zip
+        name: ${{ env.PACKAGENAME }}
+        path: ${{ env.PACKAGENAME }}.zip
 
   openmp-macos:
     runs-on: macos-latest
@@ -134,7 +134,7 @@ jobs:
     needs: [setup, openmp-macos]
     runs-on: macos-latest
     env:
-      PACKAGENAME: $APPLICATION_NAME-${{ needs.setup.outputs.VERSION }}-macos
+      PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-macos
     steps:
     - uses: actions/checkout@v2
       with:
@@ -183,22 +183,22 @@ jobs:
         cmake --build . -j 2
     - name: package
       run: |
-        mkdir -p $PACKAGENAME
-        cp README.md LICENSE $PACKAGENAME
-        lipo -create build-x86_64/$APPLICATION_NAME build-arm64/$APPLICATION_NAME -o $PACKAGENAME/$APPLICATION_NAME
-        strip $PACKAGENAME/$APPLICATION_NAME
-        zip -9 -r $PACKAGENAME.zip $PACKAGENAME
+        mkdir -p ${{ env.PACKAGENAME }}
+        cp README.md LICENSE ${{ env.PACKAGENAME }}
+        lipo -create build-x86_64/$APPLICATION_NAME build-arm64/$APPLICATION_NAME -o ${{ env.PACKAGENAME }}/$APPLICATION_NAME
+        strip ${{ env.PACKAGENAME }}/$APPLICATION_NAME
+        zip -9 -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
     - name: upload
       uses: actions/upload-artifact@v2
       with:
-        name: $PACKAGENAME
-        path: $PACKAGENAME.zip
+        name: ${{ env.PACKAGENAME }}
+        path: ${{ env.PACKAGENAME }}.zip
 
   windows:
     needs: [setup]
     runs-on: windows-latest
     env:
-      PACKAGENAME: $APPLICATION_NAME-${{ needs.setup.outputs.VERSION }}-windows
+      PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-windows
     steps:
     - uses: actions/checkout@v2
       with:
@@ -223,17 +223,17 @@ jobs:
         cmake --build . --config Release -j 2
     - name: package
       run: |
-        mkdir $PACKAGENAME
-        Copy-Item -Verbose -Path "README.md" -Destination "$PACKAGENAME"
-        Copy-Item -Verbose -Path "LICENSE" -Destination "$PACKAGENAME"
-        Copy-Item -Verbose -Path "build\$APPLICATION_NAME.exe" -Destination "$PACKAGENAME"
-        Copy-Item -Verbose -Path "C:\windows\system32\vcomp140.dll" -Destination "$PACKAGENAME"
-        7z a -r $PACKAGENAME.zip $PACKAGENAME
+        mkdir ${{ env.PACKAGENAME }}
+        Copy-Item -Verbose -Path "README.md" -Destination "${{ env.PACKAGENAME }}"
+        Copy-Item -Verbose -Path "LICENSE" -Destination "${{ env.PACKAGENAME }}"
+        Copy-Item -Verbose -Path "build\$APPLICATION_NAME.exe" -Destination "${{ env.PACKAGENAME }}"
+        Copy-Item -Verbose -Path "C:\windows\system32\vcomp140.dll" -Destination "${{ env.PACKAGENAME }}"
+        7z a -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
     - name: upload
       uses: actions/upload-artifact@v2
       with:
-        name: $PACKAGENAME
-        path: $PACKAGENAME.zip
+        name: ${{ env.PACKAGENAME }}
+        path: ${{ env.PACKAGENAME }}.zip
 
   release:
     needs: [setup, models, ubuntu, macos, windows]
@@ -259,42 +259,42 @@ jobs:
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGENAME: $APPLICATION_NAME-${{ needs.setup.outputs.VERSION }}-models
+        PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-models
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/$PACKAGENAME/$PACKAGENAME.zip
-        asset_name: $PACKAGENAME.zip
+        asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
+        asset_name: ${{ env.PACKAGENAME }}.zip
         asset_content_type: application/zip
 
     - name: upload-ubuntu
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGENAME: $APPLICATION_NAME-${{ needs.setup.outputs.VERSION }}-ubuntu
+        PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-ubuntu
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/$PACKAGENAME/$PACKAGENAME.zip
-        asset_name: $PACKAGENAME.zip
+        asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
+        asset_name: ${{ env.PACKAGENAME }}.zip
         asset_content_type: application/zip
 
     - name: upload-macos
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGENAME: $APPLICATION_NAME-${{ needs.setup.outputs.VERSION }}-macos
+        PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-macos
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/$PACKAGENAME/$PACKAGENAME.zip
-        asset_name: $PACKAGENAME.zip
+        asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
+        asset_name: ${{ env.PACKAGENAME }}.zip
         asset_content_type: application/zip
 
     - name: upload-windows
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        PACKAGENAME: $APPLICATION_NAME-${{ needs.setup.outputs.VERSION }}-windows
+        PACKAGENAME: ${{ env.APPLICATION_NAME }}-${{ needs.setup.outputs.VERSION }}-windows
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/$PACKAGENAME/$PACKAGENAME.zip
-        asset_name: $PACKAGENAME.zip
+        asset_path: artifacts/${{ env.PACKAGENAME }}/${{ env.PACKAGENAME }}.zip
+        asset_name: ${{ env.PACKAGENAME }}.zip
         asset_content_type: application/zip
