@@ -82,7 +82,7 @@ jobs:
         mkdir build-x86_64 && cd build-x86_64
         cmake -DUSE_STATIC_MOLTENVK=ON \
             -DVulkan_INCLUDE_DIR=`pwd`/../vulkansdk-macos-1.2.162.0/MoltenVK/include \
-            -DVulkan_LIBRARY=`pwd`/../vulkansdk-macos-1.2.162.0/MoltenVK/MoltenVK.xcframework/MoltenVK \
+            -DVulkan_LIBRARY=`pwd`/../vulkansdk-macos-1.2.162.0/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/libMoltenVK.a \
             ../src
         cmake --build . -j 2
     - name: build-arm64
@@ -91,6 +91,6 @@ jobs:
         mkdir build-arm64 && cd build-arm64
         cmake -DUSE_STATIC_MOLTENVK=ON \
             -DVulkan_INCLUDE_DIR=`pwd`/../vulkansdk-macos-1.2.162.0/MoltenVK/include \
-            -DVulkan_LIBRARY=`pwd`/../vulkansdk-macos-1.2.162.0/MoltenVK/MoltenVK.xcframework/MoltenVK \
+            -DVulkan_LIBRARY=`pwd`/../vulkansdk-macos-1.2.162.0/MoltenVK/MoltenVK.xcframework/macos-arm64_x86_64/libMoltenVK.a \
             ../src
         cmake --build . -j 2
