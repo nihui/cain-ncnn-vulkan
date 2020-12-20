@@ -230,7 +230,7 @@ jobs:
         mkdir ${{ env.PACKAGENAME }}
         Copy-Item -Verbose -Path "README.md" -Destination "${{ env.PACKAGENAME }}"
         Copy-Item -Verbose -Path "LICENSE" -Destination "${{ env.PACKAGENAME }}"
-        Copy-Item -Verbose -Path "build\${{ needs.setup.outputs.APPNAME }}.exe" -Destination "${{ env.PACKAGENAME }}"
+        Copy-Item -Verbose -Path "build\Release\${{ needs.setup.outputs.APPNAME }}.exe" -Destination "${{ env.PACKAGENAME }}"
         Copy-Item -Verbose -Path "C:\windows\system32\vcomp140.dll" -Destination "${{ env.PACKAGENAME }}"
         7z a -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
     - name: upload
