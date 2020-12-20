@@ -73,8 +73,8 @@ jobs:
       run: |
         mkdir -p ${{ env.PACKAGENAME }}
         cp README.md LICENSE ${{ env.PACKAGENAME }}
-        cp -r build/$APPLICATION_NAME ${{ env.PACKAGENAME }}
-        strip -g ${{ env.PACKAGENAME }}/$APPLICATION_NAME
+        cp -r build/${{ needs.setup.outputs.APPNAME }} ${{ env.PACKAGENAME }}
+        strip -g ${{ env.PACKAGENAME }}/${{ needs.setup.outputs.APPNAME }}
         zip -9 -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
     - name: upload
       uses: actions/upload-artifact@v2
@@ -189,8 +189,8 @@ jobs:
       run: |
         mkdir -p ${{ env.PACKAGENAME }}
         cp README.md LICENSE ${{ env.PACKAGENAME }}
-        lipo -create build-x86_64/$APPLICATION_NAME build-arm64/$APPLICATION_NAME -o ${{ env.PACKAGENAME }}/$APPLICATION_NAME
-        strip ${{ env.PACKAGENAME }}/$APPLICATION_NAME
+        lipo -create build-x86_64/${{ needs.setup.outputs.APPNAME }} build-arm64/${{ needs.setup.outputs.APPNAME }} -o ${{ env.PACKAGENAME }}/${{ needs.setup.outputs.APPNAME }}
+        strip ${{ env.PACKAGENAME }}/${{ needs.setup.outputs.APPNAME }}
         zip -9 -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
     - name: upload
       uses: actions/upload-artifact@v2
@@ -230,7 +230,7 @@ jobs:
         mkdir ${{ env.PACKAGENAME }}
         Copy-Item -Verbose -Path "README.md" -Destination "${{ env.PACKAGENAME }}"
         Copy-Item -Verbose -Path "LICENSE" -Destination "${{ env.PACKAGENAME }}"
-        Copy-Item -Verbose -Path "build\$APPLICATION_NAME.exe" -Destination "${{ env.PACKAGENAME }}"
+        Copy-Item -Verbose -Path "build\${{ needs.setup.outputs.APPNAME }}.exe" -Destination "${{ env.PACKAGENAME }}"
         Copy-Item -Verbose -Path "C:\windows\system32\vcomp140.dll" -Destination "${{ env.PACKAGENAME }}"
         7z a -r ${{ env.PACKAGENAME }}.zip ${{ env.PACKAGENAME }}
     - name: upload
