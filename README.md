@@ -1,6 +1,7 @@
 # CAIN ncnn Vulkan
 
 ![CI](https://github.com/nihui/cain-ncnn-vulkan/workflows/CI/badge.svg)
+![download](https://img.shields.io/github/downloads/nihui/cain-ncnn-vulkan/total.svg)
 
 ncnn implementation of CAIN, Channel Attention Is All You Need for Video Frame Interpolation.
 
